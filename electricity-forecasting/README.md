@@ -1,123 +1,59 @@
 # Electricity Consumption Forecasting Using AI and Machine Learning
 
-## MVP
-
-The MVP implements:
-
-1. CSV upload
-2. Data cleaning
-3. Missing-value handling
-4. Duplicate removal
-5. Datetime conversion and chronological sorting
-6. Feature engineering
-7. Chronological train/test split
-8. Random Forest baseline
-9. LSTM forecasting
-10. MAE/RMSE/MAPE evaluation
-11. Best-model selection
-12. Historical and actual-vs-predicted visualization
-13. Next-step forecast
-14. Streamlit dashboard
-15. SQLite metadata, run, evaluation and forecast storage
-
-## Directory
-
-```text
-electricity-forecasting/
-├── app.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── data/
-│   ├── raw/
-│   └── processed/
-├── src/
-│   ├── __init__.py
-│   ├── data_pipeline.py
-│   ├── evaluation.py
-│   ├── visualization.py
-│   ├── db.py
-│   └── models/
-│       ├── __init__.py
-│       ├── random_forest.py
-│       ├── lstm_model.py
-│       └── transformer_model.py
-├── models_store/
-│   ├── random_forest_model.pkl
-│   ├── lstm_model.h5
-│   └── transformer_model.h5
-├── database/
-│   └── forecasting.db
-├── api/
-│   ├── __init__.py
-│   ├── main.py
-│   └── routes/
-│       ├── __init__.py
-│       ├── upload.py
-│       ├── train.py
-│       └── predict.py
-├── llm/
-│   └── explain.py
-├── notebooks/
-├── tests/
-└── docs/
-```
-
-## Run locally
-
-```bash
-python -m venv .venv
-```
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Install:
-
-```bash
-pip install -r requirements.txt
-```
-
-Run Streamlit:
-
-```bash
-streamlit run app.py
-```
-
-Optional API:
-
-```bash
-uvicorn api.main:app --reload
-```
+A beginner-friendly Streamlit project using the supplied hourly electricity dataset. Random Forest is the default MVP model; LSTM is optional and requires TensorFlow.
 
 ## Dataset
 
-Minimum required fields are a Date/Time field and electricity
-consumption/demand. The application recognizes common names including:
+The supplied CSV is stored at `data/raw/electricity_consumption_data.csv`. It contains `datetime`, `consumption_kWh`, calendar features, temperature, humidity and holiday information. The app also accepts another CSV with at least `datetime` and `consumption_kWh`.
 
-- datetime
-- date/time
-- timestamp
-- date
-- consumption
-- consumption_kwh
-- power
-- demand
-- load
-- energy
+## Run on Windows
 
-Hourly data is recommended.
+Open this folder in VS Code, then open **Terminal → New Terminal** and run:
 
-## Important time-series rule
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-The project uses chronological splitting. It does not randomly shuffle
-records before testing, because future observations must not leak into training.
+If PowerShell blocks activation, use Command Prompt terminal and run `.venv\Scripts\activate.bat`, or run `.venv\Scripts\python.exe -m streamlit run app.py` after installing packages.
 
-## Optional components
+## Run on macOS/Linux
 
-The Transformer, FastAPI, notebooks, tests and Ollama LLM assistant are kept
-separate from the MVP. Build and validate Random Forest + LSTM + Streamlit
-first.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+## How to use
+
+1. The app loads the included dataset automatically, or upload another CSV.
+2. Inspect the rows and consumption chart.
+3. Use the sidebar settings and click **Train and evaluate model**.
+4. Review MAE, RMSE, MAPE and the actual-vs-predicted chart.
+5. Download test predictions as a CSV.
+6. The database is created automatically at `database/forecasting.db`.
+
+## Project structure
+
+- `app.py`: Streamlit user interface and workflow
+- `src/data_pipeline.py`: validation, cleaning, time features and lag features
+- `src/models/random_forest.py`: Random Forest model with chronological test split
+- `src/models/lstm_model.py`: optional TensorFlow LSTM
+- `src/models/transformer_model.py`: placeholder for post-MVP work
+- `src/evaluation.py`: MAE, RMSE and guarded MAPE
+- `src/visualization.py`: actual-vs-predicted chart
+- `src/db.py`: SQLite tables and run persistence
+- `data/raw/`: original dataset
+- `data/processed/`: processed CSV output
+- `models_store/`: saved model artifacts can be added here
+
+## Notes
+
+- Data is synthetic/sample-style and covers 2024; forecasts demonstrate model workflow and are not operational utility forecasts.
+- A chronological split is used to avoid random shuffling of time-series observations.
+- Transformer, FastAPI and local LLM explanation are optional extensions, not required to run the MVP.
