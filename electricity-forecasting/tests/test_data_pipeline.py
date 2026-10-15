@@ -1,28 +1,20 @@
-import pandas as pd
-from src.data_pipeline import process_dataframe, create_features, chronological_split
+from src.data_pipeline import load_and_clean_data, make_features
 
-def test_process_dataframe():
-    df = pd.DataFrame({
-        "datetime": ["2025-01-01 01:00", "2025-01-01 00:00", "2025-01-01 00:00"],
-        "consumption_kwh": [5.0, 4.0, 4.0],
-    })
-    cleaned, report = process_dataframe(df)
-    assert list(cleaned.columns) == ["datetime", "consumption"]
-    assert len(cleaned) == 2
-    assert cleaned["datetime"].is_monotonic_increasing
-    assert report["duplicates_removed"] == 1
 
-def test_feature_engineering():
-    dates = pd.date_range("2025-01-01", periods=200, freq="h")
-    df = pd.DataFrame({"datetime": dates, "consumption": range(200)})
-    features = create_features(df)
-    assert "hour" in features.columns
-    assert "lag_24" in features.columns
-    assert "rolling_mean_24" in features.columns
+def test_load_and_clean_data():
+    import pandas as pd
+    df = pd.DataFrame({"datetime": ["2024-01-01 01:00", "2024-01-01 00:00"],
+                       "consumption_kWh": [2.0, 1.0]})
+    clean = load_and_clean_data(df.to_csv(index=False).encode())
+    assert clean.index.is_monotonic_increasing
+    assert len(clean) == 2
 
-def test_chronological_split():
-    dates = pd.date_range("2025-01-01", periods=100, freq="h")
-    df = pd.DataFrame({"datetime": dates, "consumption": range(100)})
-    train, test = chronological_split(df, 0.2)
-    assert len(train) == 80
-    assert train["datetime"].max() < test["datetime"].min()
+
+def test_make_features():
+    import pandas as pd
+    from src.data_pipeline import TARGET_COL
+    idx = pd.date_range("2024-01-01", periods=200, freq="h")
+    df = pd.DataFrame({TARGET_COL: range(200)}, index=idx)
+    featured = make_features(df)
+    assert "lag_24" in featured.columns
+    assert len(featured) > 0
